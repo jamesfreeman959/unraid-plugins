@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommunityApplications>
+  <Profile>
+Unraid plugins by jamesfreeman959.
+
+- **Disk Usage (duc):** scheduled disk usage indexing with an instant browser in the webGUI ([support thread](https://forums.unraid.net/topic/200807-plugin-disk-usage-duc/))
+
+Each plugin's support thread is linked from its listing. Source code and issue trackers for each plugin are on [GitHub](https://github.com/jamesfreeman959?tab=repositories).
+  </Profile>
+  <Icon>https://github.com/jamesfreeman959.png</Icon>
+  <WebPage>https://github.com/jamesfreeman959/unraid-plugins</WebPage>
+</CommunityApplications>

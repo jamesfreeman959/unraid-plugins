@@ -1,0 +1,52 @@
+name: Validate
+
+# Checks the Community Applications feed: the profile is present and every plugin
+# wrapper is complete and points at a live .plg whose pluginURL matches exactly.
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"   # weekly, to catch a plugin repo changing underneath us
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xmllint
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils
+
+      - name: Profile
+        run: |
+          xmllint --noout ca_profile.xml
+          profile=$(xmllint --xpath 'normalize-space(/CommunityApplications/Profile)' ca_profile.xml)
+          [[ -n "$profile" ]] || { echo "::error file=ca_profile.xml::<Profile> must not be empty"; exit 1; }
+
+      - name: Plugin wrappers
+        run: |
+          status=0
+          for f in plugins/*.xml; do
+            xmllint --noout "$f" || { status=1; continue; }
+            for tag in Name PluginURL Overview Support Project Category; do
+              v=$(xmllint --xpath "normalize-space(/Plugin/$tag)" "$f")
+              [[ -n "$v" ]] || { echo "::error file=$f::missing <$tag>"; status=1; }
+            done
+            url=$(xmllint --xpath 'normalize-space(/Plugin/PluginURL)' "$f")
+            if ! curl -fsSL "$url" -o /tmp/plugin.plg; then
+              echo "::error file=$f::PluginURL is not reachable: $url"; status=1; continue
+            fi
+            plg=$(xmllint --noent --xpath 'string(/PLUGIN/@pluginURL)' /tmp/plugin.plg)
+            if [[ "$plg" != "$url" ]]; then
+              echo "::error file=$f::PluginURL does not match the .plg's pluginURL ($plg)"; status=1
+            fi
+            for tag in Icon Screenshot; do
+              for u in $(xmllint --xpath "/Plugin/$tag/text()" "$f" 2>/dev/null); do
+                curl -fsSIL "$u" > /dev/null || { echo "::error file=$f::<$tag> not reachable: $u"; status=1; }
+              done
+            done
+            echo "$f: ok"
+          done
+          exit $status
