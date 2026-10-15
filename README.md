@@ -9,7 +9,7 @@ templates. It only holds the listing metadata. Each app's code, issues and relea
 
 | Docker container | Repository | Support |
 | --- | --- | --- |
-| BorgWarehouse | [unraid-borgwarehouse](https://github.com/jamesfreeman959/unraid-borgwarehouse) | [GitHub issues](https://github.com/jamesfreeman959/unraid-borgwarehouse/issues) |
+| BorgWarehouse | [unraid-borgwarehouse](https://github.com/jamesfreeman959/unraid-borgwarehouse) | [Forum thread](https://forums.unraid.net/topic/200915-plugin-borgwarehouse/) |
 
 To install, search for the app in the **Apps** tab of your Unraid server.
 

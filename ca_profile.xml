@@ -4,7 +4,7 @@
 Unraid plugins and Docker templates by jamesfreeman959.
 
 - **Disk Usage (duc):** scheduled disk usage indexing with an instant browser in the webGUI ([support thread](https://forums.unraid.net/topic/200807-plugin-disk-usage-duc/))
-- **BorgWarehouse:** a web interface for running your own BorgBackup server, as a Docker container using the official image
+- **BorgWarehouse:** a web interface for running your own BorgBackup server, as a Docker container using the official image ([support thread](https://forums.unraid.net/topic/200915-plugin-borgwarehouse/))
 
 Each app's support link is on its listing. Source code and issue trackers for each app are on [GitHub](https://github.com/jamesfreeman959?tab=repositories).
   </Profile>
