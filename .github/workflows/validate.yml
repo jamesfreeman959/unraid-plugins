@@ -1,13 +1,14 @@
 name: Validate
 
-# Checks the Community Applications feed: the profile is present and every plugin
-# wrapper is complete and points at a live .plg whose pluginURL matches exactly.
+# Checks the Community Applications feed: the profile is present, every plugin
+# wrapper is complete and points at a live .plg whose pluginURL matches exactly, and
+# every Docker template is complete and identical to the copy at its TemplateURL.
 
 on:
   push:
   pull_request:
   schedule:
-    - cron: "0 6 * * 1"   # weekly, to catch a plugin repo changing underneath us
+    - cron: "0 6 * * 1"   # weekly, to catch an app repo changing underneath us
   workflow_dispatch:
 
 jobs:
@@ -47,6 +48,31 @@ jobs:
                 curl -fsSIL "$u" > /dev/null || { echo "::error file=$f::<$tag> not reachable: $u"; status=1; }
               done
             done
+            echo "$f: ok"
+          done
+          exit $status
+
+      - name: Docker templates
+        run: |
+          shopt -s nullglob
+          status=0
+          for f in templates/*.xml; do
+            xmllint --noout "$f" || { status=1; continue; }
+            for tag in Name Repository Overview Support Project Category Icon TemplateURL WebUI; do
+              v=$(xmllint --xpath "normalize-space(/Container/$tag)" "$f")
+              [[ -n "$v" ]] || { echo "::error file=$f::missing <$tag>"; status=1; }
+            done
+            dups=$(xmllint --xpath '/Container/Config/@Target' "$f" | tr ' ' '\n' | grep . | sort | uniq -d)
+            [[ -z "$dups" ]] || { echo "::error file=$f::duplicate Config targets: $dups"; status=1; }
+            url=$(xmllint --xpath 'normalize-space(/Container/TemplateURL)' "$f")
+            if ! curl -fsSL "$url" -o /tmp/template.xml; then
+              echo "::error file=$f::TemplateURL is not reachable: $url"; status=1; continue
+            fi
+            if ! diff -u /tmp/template.xml "$f"; then
+              echo "::error file=$f::differs from the copy at its TemplateURL ($url). Copy it again from the app's repository."; status=1
+            fi
+            icon=$(xmllint --xpath 'normalize-space(/Container/Icon)' "$f")
+            curl -fsSIL "$icon" > /dev/null || { echo "::error file=$f::<Icon> not reachable: $icon"; status=1; }
             echo "$f: ok"
           done
           exit $status
